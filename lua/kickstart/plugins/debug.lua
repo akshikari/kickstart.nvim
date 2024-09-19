@@ -18,11 +18,23 @@ return {
     'nvim-neotest/nvim-nio',
 
     -- Installs the debug adapters for you
-    'williamboman/mason.nvim',
+    { 'williamboman/mason.nvim', config = true },
     'jay-babu/mason-nvim-dap.nvim',
 
     -- Add your own debuggers here
-    'leoluz/nvim-dap-go',
+    'leoluz/nvim-dap-go', -- Go
+    'mfussenegger/nvim-dap-python', -- Python
+    {
+      'mxsdev/nvim-dap-vscode-js', -- JavaScript, TypeScript
+      dependencies = {
+        'microsoft/vscode-js-debug', -- Required debugger
+        build = 'npm ci --legacy-peer-deps && npm run compile',
+      },
+    },
+    'puremourning/vimspector', -- C/C++
+
+    -- Virtual text for debugger
+    'theHamsta/nvim-dap-virtual-text',
   },
   keys = function(_, keys)
     local dap = require 'dap'
@@ -63,9 +75,14 @@ return {
       -- online, please don't ask me how to install them :)
       ensure_installed = {
         -- Update this to ensure that you have the debuggers for the langs you want
-        'delve',
+        'delve', -- Go
+        'debugpy', -- Python
+        'codelldb', -- C/C++
       },
     }
+
+    -- Enable virtual text
+    require('nvim-dap-virtual-text').setup()
 
     -- Dap UI setup
     -- For more information, see |:help nvim-dap-ui|
@@ -73,8 +90,55 @@ return {
       -- Set icons to characters that are more likely to work in every terminal.
       --    Feel free to remove or use ones that you like more! :)
       --    Don't feel like these are good choices.
+      mappings = {
+        expand = { '<CR>', '<2-LeftMouse>' },
+        open = 'o',
+        remove = 'd',
+        edit = 'e',
+        repl = 'r',
+        toggle = 't',
+      },
+      element_mappings = {},
+      expand_lines = true,
+      force_buffers = true,
+      layouts = {
+        {
+          elements = {
+            'scopes',
+            'breakpoints',
+            'stacks',
+            'watches',
+          },
+          size = 40, -- Width of the layout in columns
+          position = 'left', -- Position can be 'left', 'right', 'top', or 'bottom'
+        },
+        {
+          elements = {
+            'repl',
+            'console',
+          },
+          size = 10, -- Height of the layout in lines
+          position = 'bottom',
+        },
+      },
+      floating = {
+        max_height = nil, -- These can be integers or a float between 0 and 1.
+        max_width = nil, -- Floats will be treated as percentage of your screen.
+        border = 'single', -- Border style. Can be 'single', 'double', etc.
+        mappings = {
+          close = { 'q', '<Esc>' },
+        },
+      },
+      windows = { indent = 1 },
+      render = {
+        max_type_length = nil, -- Can be integer or nil.
+        max_value_lines = 100, -- Limit the number of lines rendered for values.
+        indent = 1, -- Indentation level for rendered variables.
+      },
       icons = { expanded = '▾', collapsed = '▸', current_frame = '*' },
       controls = {
+        enabled = true,
+        element = 'repl', -- The element where the controls will be displayed
         icons = {
           pause = '⏸',
           play = '▶',
@@ -101,5 +165,61 @@ return {
         detached = vim.fn.has 'win32' == 0,
       },
     }
+
+    -- Python configuration
+    require('dap-python').setup '~/.local/share/nvim/mason/packages/debugpy/venv/bin/python'
+
+    -- Javascript/TypeScript configuration
+    require('dap-vscode-js').setup {
+      -- node_path = "node", -- Path of node executable. Defaults to $NODE_PATH, and then "node"
+      debugger_path = vim.fn.stdpath 'data' .. '/mason/packages/js-debug-adapter',
+      adapters = { 'pwa-node', 'pwa-chrome', 'pwa-msedge', 'node-terminal' },
+    }
+
+    for _, language in ipairs { 'typescript', 'javascript' } do
+      dap.configurations[language] = {
+        {
+          type = 'pwa-node',
+          request = 'launch',
+          name = 'Launch file',
+          program = '${file}',
+          cwd = '${workspaceFolder}',
+          runtimeExecutable = 'node',
+          console = 'integratedTerminal',
+        },
+        {
+          type = 'pwa-node',
+          request = 'attach',
+          name = 'Attach',
+          processId = require('dap.utils').pick_process,
+          cwd = '${workspaceFolder}',
+        },
+      }
+    end
+
+    -- C/C++ configuration
+    dap.adapters.codelldb = {
+      type = 'server',
+      port = '${port}',
+      executable = {
+        command = vim.fn.stdpath 'data' .. '/mason/bin/codelldb',
+        args = { '--port', '${port}' },
+      },
+    }
+
+    dap.configurations.cpp = {
+      {
+        name = 'Launch file',
+        type = 'codelldb',
+        request = 'launch',
+        program = function()
+          return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+        end,
+        cwd = '${workspaceFolder}',
+        stopOnEntry = false,
+      },
+    }
+
+    dap.configurations.c = dap.configurations.cpp
   end,
 }
