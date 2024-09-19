@@ -623,6 +623,7 @@ require('lazy').setup({
         go = { 'gofmt' }, -- Go
         c = { 'clang_format' }, -- C
         cpp = { 'clang_format' }, -- C++
+        markdown = { 'prettierd', 'prettier', stop_after_first = true },
       },
     },
   },
