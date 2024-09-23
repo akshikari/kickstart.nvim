@@ -82,7 +82,7 @@ return {
     }
 
     -- Enable virtual text
-    require('nvim-dap-virtual-text').setup()
+    require('nvim-dap-virtual-text').setup {}
 
     -- Dap UI setup
     -- For more information, see |:help nvim-dap-ui|

@@ -74,6 +74,12 @@ vim.opt.scrolloff = 10
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
+-- Buffer Navigation and management
+vim.keymap.set('n', '<leader>bq', '<cmd>bd<CR>', { desc = '[Q]uit current open buffer' })
+vim.keymap.set('n', '<leader>bqq', '<cmd>bd!<CR>', { desc = '[Q]uit current open buffer forcefull' })
+vim.keymap.set('n', '<leader>bn', ':bnext<CR>', { desc = 'Go to [N]ext open buffer' })
+vim.keymap.set('n', '<leader>bp', ':bprevious<CR>', { desc = 'Go to [P]revious open buffer' })
+
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
@@ -250,6 +256,7 @@ require('lazy').setup({
         { '<leader>w', group = '[W]orkspace' },
         { '<leader>t', group = '[T]oggle' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+        { '<leader>b', group = '[B]uffer' },
       },
     },
   },
@@ -576,6 +583,15 @@ require('lazy').setup({
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
+        'markdownlint', -- Markdown linter
+        'hadolint', -- Dockerfile linter
+        'jsonlint', -- JSON linter
+        'eslint', -- JavaScript linter
+        'flake8', -- Python linter
+        'yamllint', -- YAML linter
+        'tflint', -- Terraform linter
+        'vale', -- Text linter
+        'sqlfluff', -- SQL linter
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -836,6 +852,11 @@ require('lazy').setup({
         'go',
         'javascript',
         'typescript',
+        'sql',
+        'dockerfile',
+        'rust',
+        'yaml',
+        'cpp',
       },
       -- Autoinstall languages that are not installed
       auto_install = true,
@@ -855,7 +876,61 @@ require('lazy').setup({
     --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
     --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
   },
+  {
+    'iamcco/markdown-preview.nvim',
+    cmd = { 'MarkdownPreviewToggle', 'MarkdownPreview', 'MarkdownPreviewStop' },
+    build = 'cd app && npm install',
+    init = function()
+      vim.g.mkdp_filetypes = { 'markdown' }
+    end,
+    ft = { 'markdown' },
+    config = function()
+      vim.keymap.set('n', '<leader>mp', ':MarkdownPreview<CR>', { desc = 'Turn on Markdown [P]review' })
+      vim.keymap.set('n', '<leader>ms', ':MarkdownPreviewStop<CR>', { desc = '[S]top Markdown preview' })
+      vim.keymap.set('n', '<leader>mt', ':MarkdownPreviewToggle<CR>', { desc = '[T]oggle Markdown preview' })
+    end,
+  },
+  {
+    'ThePrimeagen/harpoon',
+    branch = 'harpoon2',
+    dependencies = { { 'nvim-lua/plenary.nvim' } },
+    config = function()
+      local harpoon = require 'harpoon'
+      harpoon:setup()
 
+      vim.keymap.set('n', '<leader>a', function()
+        harpoon:list():add()
+      end, { desc = '[A]dd file to harpoon pick list' })
+      vim.keymap.set('n', '<C-e>', function()
+        harpoon.ui:toggle_quick_menu(harpoon:list())
+      end, { desc = 'Toggle harpoon list' })
+
+      vim.keymap.set('n', '<C-h>', function()
+        harpoon:list():select(1)
+      end, { desc = 'Open first file in harpoon' })
+      vim.keymap.set('n', '<C-t>', function()
+        harpoon:list():select(2)
+      end, { desc = 'Open second file in harpoon' })
+      vim.keymap.set('n', '<C-n>', function()
+        harpoon:list():select(3)
+      end, { desc = 'Open third file in harpoon' })
+      vim.keymap.set('n', '<C-s>', function()
+        harpoon:list():select(4)
+      end, { desc = 'Open fourth file in harpoon' })
+      vim.keymap.set('n', '<leader><C-h>', function()
+        harpoon:list():replace_at(1)
+      end, { desc = 'Replace first file in harpoon with current file' })
+      vim.keymap.set('n', '<leader><C-t>', function()
+        harpoon:list():replace_at(2)
+      end, { desc = 'Replace second file in harpoon with current file' })
+      vim.keymap.set('n', '<leader><C-n>', function()
+        harpoon:list():replace_at(3)
+      end, { desc = 'Replace third file in harpoon with current file' })
+      vim.keymap.set('n', '<leader><C-s>', function()
+        harpoon:list():replace_at(4)
+      end, { desc = 'Replace fourth file in harpoon with current file' })
+    end,
+  },
   -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
   -- place them in the correct locations.
