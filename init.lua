@@ -74,12 +74,6 @@ vim.opt.scrolloff = 10
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
--- Buffer Navigation and management
-vim.keymap.set('n', '<leader>bq', '<cmd>bd<CR>', { desc = '[Q]uit current open buffer' })
-vim.keymap.set('n', '<leader>bqq', '<cmd>bd!<CR>', { desc = '[Q]uit current open buffer forcefull' })
-vim.keymap.set('n', '<leader>bn', ':bnext<CR>', { desc = 'Go to [N]ext open buffer' })
-vim.keymap.set('n', '<leader>bp', ':bprevious<CR>', { desc = 'Go to [P]revious open buffer' })
-
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
@@ -100,6 +94,12 @@ vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' }
 -- vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
 -- vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
 -- vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
+
+-- Keymaps for splitting the window under <leader>b
+vim.keymap.set('n', '<leader>bv', ':vsplit<CR>', { desc = 'Vertical Split' }) -- <leader>bv for vertical split
+vim.keymap.set('n', '<leader>bh', ':split<CR>', { desc = 'Horizontal Split' }) -- <leader>bh for horizontal split
+vim.keymap.set('n', '<leader>bo', '<C-w>o', { desc = 'Close other splits' }) -- <leader>bo to close other splits
+vim.keymap.set('n', '<leader>bc', '<C-w>c', { desc = 'Close current split' }) -- <leader>bc to close current split
 
 -- Keybinds to make split navigation easier.
 --  Use CTRL+<hjkl> to switch between windows
@@ -256,7 +256,7 @@ require('lazy').setup({
         { '<leader>w', group = '[W]orkspace' },
         { '<leader>t', group = '[T]oggle' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
-        { '<leader>b', group = '[B]uffer' },
+        { '<leader>b', group = '[B]reak Window' },
       },
     },
   },
@@ -930,6 +930,23 @@ require('lazy').setup({
         harpoon:list():replace_at(4)
       end, { desc = 'Replace fourth file in harpoon with current file' })
     end,
+  },
+  {
+    'christoomey/vim-tmux-navigator',
+    cmd = {
+      'TmuxNavigateLeft',
+      'TmuxNavigateDown',
+      'TmuxNavigateUp',
+      'TmuxNavigateRight',
+      'TmuxNavigatePrevious',
+    },
+    keys = {
+      { '<c-h>', '<cmd><C-U>TmuxNavigateLeft<cr>' },
+      { '<c-j>', '<cmd><C-U>TmuxNavigateDown<cr>' },
+      { '<c-k>', '<cmd><C-U>TmuxNavigateUp<cr>' },
+      { '<c-l>', '<cmd><C-U>TmuxNavigateRight<cr>' },
+      { '<c-\\>', '<cmd><C-U>TmuxNavigatePrevious<cr>' },
+    },
   },
   -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
