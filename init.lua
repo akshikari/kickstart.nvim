@@ -257,6 +257,7 @@ require('lazy').setup({
         { '<leader>t', group = '[T]oggle' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
         { '<leader>b', group = '[B]reak Window' },
+        { '<leader>f', group = 'Harpoon [F]ile Management', mode = { 'n' } },
       },
     },
   },
@@ -592,6 +593,9 @@ require('lazy').setup({
         'tflint', -- Terraform linter
         'vale', -- Text linter
         'sqlfluff', -- SQL linter
+        'black', -- Python formatter
+        'docformatter', -- Python docstrings formatter
+        'isort', -- Python import list formatter
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -644,7 +648,12 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
-        python = { 'black' },
+        python = {
+          'isort',
+          'black',
+          'docformatter --in-place',
+          stop_after_first = false,
+        },
         -- You can use 'stop_after_first' to run the first available formatter from the list
         javascript = { 'prettierd', 'prettier', stop_after_first = true },
         typescript = { 'prettierd', 'prettier', stop_after_first = true }, -- TypeScript
@@ -779,11 +788,16 @@ require('lazy').setup({
     -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
     'folke/tokyonight.nvim',
     priority = 1000, -- Make sure to load this before all the other start plugins.
+    opts = {
+      style = 'night',
+      on_colors = function(colors)
+        colors.bg = '#1E2127'
+      end,
+    },
     init = function()
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
 
       -- You can configure highlights by doing something like:
       vim.cmd.hi 'Comment gui=none'
@@ -791,7 +805,47 @@ require('lazy').setup({
   },
 
   -- Highlight todo, notes, etc in comments
-  { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
+  {
+    'folke/todo-comments.nvim',
+    event = 'VimEnter',
+    dependencies = { 'nvim-lua/plenary.nvim' },
+    opts = {
+      signs = true,
+    },
+    keys = {
+      {
+        ']t',
+        function()
+          require('todo-comments').jump_next()
+        end,
+        desc = 'Next todo comment',
+      },
+      {
+        '[t',
+        function()
+          require('todo-comments').jump_prev()
+        end,
+        desc = 'Previous todo comment',
+      },
+      {
+        ']e',
+        function()
+          require('todo-comments').jump_next { keywords = { 'ERROR', 'WARNING' } }
+        end,
+        desc = 'Next error/warning todo comment',
+      },
+      {
+        '<leader>ct',
+        '<cmd>TodoTelescope<CR>',
+        desc = 'Open List of all [T]odo-related comments in Telescope',
+      },
+      -- {
+      --   '<leader>cy',
+      --   '<cmd>TodoLocList<CR>',
+      --   desc = 'Open all Todo-related comments relevant to the current [L]ocation',
+      -- },
+    },
+  },
 
   { -- Collection of various small independent plugins/modules
     'echasnovski/mini.nvim',
@@ -877,20 +931,6 @@ require('lazy').setup({
     --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
   },
   {
-    'iamcco/markdown-preview.nvim',
-    cmd = { 'MarkdownPreviewToggle', 'MarkdownPreview', 'MarkdownPreviewStop' },
-    build = 'cd app && npm install',
-    init = function()
-      vim.g.mkdp_filetypes = { 'markdown' }
-    end,
-    ft = { 'markdown' },
-    config = function()
-      vim.keymap.set('n', '<leader>mp', ':MarkdownPreview<CR>', { desc = 'Turn on Markdown [P]review' })
-      vim.keymap.set('n', '<leader>ms', ':MarkdownPreviewStop<CR>', { desc = '[S]top Markdown preview' })
-      vim.keymap.set('n', '<leader>mt', ':MarkdownPreviewToggle<CR>', { desc = '[T]oggle Markdown preview' })
-    end,
-  },
-  {
     'ThePrimeagen/harpoon',
     branch = 'harpoon2',
     dependencies = { { 'nvim-lua/plenary.nvim' } },
@@ -905,28 +945,28 @@ require('lazy').setup({
         harpoon.ui:toggle_quick_menu(harpoon:list())
       end, { desc = 'Toggle harpoon list' })
 
-      vim.keymap.set('n', '<C-h>', function()
+      vim.keymap.set('n', '<leader>f1', function()
         harpoon:list():select(1)
       end, { desc = 'Open first file in harpoon' })
-      vim.keymap.set('n', '<C-t>', function()
+      vim.keymap.set('n', '<leader>f2', function()
         harpoon:list():select(2)
       end, { desc = 'Open second file in harpoon' })
-      vim.keymap.set('n', '<C-n>', function()
+      vim.keymap.set('n', '<leader>f3', function()
         harpoon:list():select(3)
       end, { desc = 'Open third file in harpoon' })
-      vim.keymap.set('n', '<C-s>', function()
+      vim.keymap.set('n', '<leader>f4', function()
         harpoon:list():select(4)
       end, { desc = 'Open fourth file in harpoon' })
-      vim.keymap.set('n', '<leader><C-h>', function()
+      vim.keymap.set('n', '<leader>fa1', function()
         harpoon:list():replace_at(1)
       end, { desc = 'Replace first file in harpoon with current file' })
-      vim.keymap.set('n', '<leader><C-t>', function()
+      vim.keymap.set('n', '<leader>fa2', function()
         harpoon:list():replace_at(2)
       end, { desc = 'Replace second file in harpoon with current file' })
-      vim.keymap.set('n', '<leader><C-n>', function()
+      vim.keymap.set('n', '<leader>fa3', function()
         harpoon:list():replace_at(3)
       end, { desc = 'Replace third file in harpoon with current file' })
-      vim.keymap.set('n', '<leader><C-s>', function()
+      vim.keymap.set('n', '<leader>fa4', function()
         harpoon:list():replace_at(4)
       end, { desc = 'Replace fourth file in harpoon with current file' })
     end,
@@ -946,6 +986,23 @@ require('lazy').setup({
       { '<c-k>', '<cmd><C-U>TmuxNavigateUp<cr>' },
       { '<c-l>', '<cmd><C-U>TmuxNavigateRight<cr>' },
       { '<c-\\>', '<cmd><C-U>TmuxNavigatePrevious<cr>' },
+    },
+  },
+  {
+    'kdheepak/lazygit.nvim',
+    lazy = true,
+    cmd = {
+      'LazyGit',
+      'LazyGitConfig',
+      'LazyGitCurrentFile',
+      'LazyGitFilter',
+      'LazyGitFilterCurrentFile',
+    },
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+    },
+    keys = {
+      { '<leader>lg', '<cmd>LazyGit<cr>', desc = 'Open up [L]azy[G]it' },
     },
   },
   -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
