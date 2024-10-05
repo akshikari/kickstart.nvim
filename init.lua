@@ -74,6 +74,12 @@ vim.opt.scrolloff = 10
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
+-- Move to first non-blank character
+vim.keymap.set('n', 'gl', '^', { desc = 'Move to first non-blank character' })
+
+-- Close current buffer
+vim.keymap.set('n', '<leader><C-q>', ':bd<CR>', { desc = 'Close current buffer' })
+
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
@@ -189,6 +195,14 @@ require('lazy').setup({
         changedelete = { text = '~' },
       },
     },
+  },
+  {
+    'windwp/nvim-ts-autotag',
+    after = 'nvim-treesitter',
+    event = 'BufReadPre',
+    config = function()
+      require('nvim-ts-autotag').setup {}
+    end,
   },
 
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
@@ -542,20 +556,19 @@ require('lazy').setup({
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
-        clangd = {},
-        gopls = {},
-        pyright = {},
-        -- rust_analyzer = {},
-        -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
-        --
+        clangd = {}, -- C/C++ language server
+        gopls = {}, -- Golang language server
+        golangci_lint_ls = {}, -- Golang language server
+        pyright = {}, -- Python language server
+        rust_analyzer = {}, -- Rust language server
+        html = {}, -- HTML language server
+        cssls = {}, -- CSS language server
+        grammarly = {}, -- Text language server
         -- Some languages (like typescript) have entire language plugins that can be useful:
         --    https://github.com/pmizio/typescript-tools.nvim
-        --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
-        ts_ls = {},
-        --
-
-        lua_ls = {
+        ts_ls = {}, -- TypeScript language server
+        lua_ls = { -- Lua language server
           -- cmd = {...},
           -- filetypes = { ...},
           -- capabilities = {},
@@ -565,7 +578,7 @@ require('lazy').setup({
                 callSnippet = 'Replace',
               },
               -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
-              -- diagnostics = { disable = { 'missing-fields' } },
+              diagnostics = { disable = { 'missing-fields' } },
             },
           },
         },
@@ -583,7 +596,15 @@ require('lazy').setup({
       -- for you, so that they are available from within Neovim.
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
-        'stylua', -- Used to format Lua code
+        'stylua', -- Lua formatter
+        'black', -- Python formatter
+        'autopep8', -- Less strict Python formatter
+        'yapf', -- Trying all the Python formatters at this point god damn
+        'docformatter', -- Python docstrings formatter
+        'isort', -- Python import list formatter
+        'clang-format', -- C/C++ Formatter
+        'prettier', -- TypeScript, JavaScript, Markdown, HTML, CSS Formatter
+        'prettierd', -- More performant formatter
         'markdownlint', -- Markdown linter
         'hadolint', -- Dockerfile linter
         'jsonlint', -- JSON linter
@@ -593,9 +614,8 @@ require('lazy').setup({
         'tflint', -- Terraform linter
         'vale', -- Text linter
         'sqlfluff', -- SQL linter
-        'black', -- Python formatter
-        'docformatter', -- Python docstrings formatter
-        'isort', -- Python import list formatter
+        'htmlhint', -- HTML linter
+        'stylelint', -- CSS linter
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -651,15 +671,20 @@ require('lazy').setup({
         python = {
           'isort',
           'black',
+          'autopep8',
+          'yapf',
           'docformatter --in-place',
           stop_after_first = false,
         },
+        html = { 'prettierd', 'prettier', stop_after_first = true },
+        css = { 'prettierd', 'prettier', stop_after_first = true },
+        rust = {},
         -- You can use 'stop_after_first' to run the first available formatter from the list
         javascript = { 'prettierd', 'prettier', stop_after_first = true },
         typescript = { 'prettierd', 'prettier', stop_after_first = true }, -- TypeScript
         go = { 'gofmt' }, -- Go
-        c = { 'clang_format' }, -- C
-        cpp = { 'clang_format' }, -- C++
+        c = { 'clang-format' }, -- C
+        cpp = { 'clang-format' }, -- C++
         markdown = { 'prettierd', 'prettier', stop_after_first = true },
       },
     },
@@ -790,17 +815,15 @@ require('lazy').setup({
     priority = 1000, -- Make sure to load this before all the other start plugins.
     opts = {
       style = 'night',
-      on_colors = function(colors)
-        colors.bg = '#1E2127'
-      end,
     },
     init = function()
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
+      vim.cmd.colorscheme 'tokyonight-night'
 
       -- You can configure highlights by doing something like:
-      vim.cmd.hi 'Comment gui=none'
+      -- vim.cmd.hi 'Comment gui=none'
     end,
   },
 
@@ -895,6 +918,7 @@ require('lazy').setup({
         'c',
         'diff',
         'html',
+        'css',
         'lua',
         'luadoc',
         'markdown',
@@ -941,7 +965,7 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>a', function()
         harpoon:list():add()
       end, { desc = '[A]dd file to harpoon pick list' })
-      vim.keymap.set('n', '<C-e>', function()
+      vim.keymap.set('n', '<C-Space>', function()
         harpoon.ui:toggle_quick_menu(harpoon:list())
       end, { desc = 'Toggle harpoon list' })
 

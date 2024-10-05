@@ -19,6 +19,9 @@ return {
         terraform = { 'tflint' }, -- Terraform linter
         text = { 'vale' }, -- Text linter
         sql = { 'sqlfluff' }, -- SQL linter
+        go = { 'golangci_lint' }, -- Golang linter
+        html = { 'htmlhint' }, -- HTML linter
+        css = { 'stylelint' }, -- CSS linter
       }
 
       -- Autocommand for linting on specific events
