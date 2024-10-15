@@ -19,7 +19,7 @@ return {
         terraform = { 'tflint' }, -- Terraform linter
         text = { 'vale' }, -- Text linter
         sql = { 'sqlfluff' }, -- SQL linter
-        go = { 'golangci_lint' }, -- Golang linter
+        go = { 'golangcilint' }, -- Golang linter
         html = { 'htmlhint' }, -- HTML linter
         css = { 'stylelint' }, -- CSS linter
       }
