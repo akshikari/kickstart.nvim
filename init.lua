@@ -297,7 +297,7 @@ require('lazy').setup({
         { '<leader>t', group = '[T]oggle' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
         { '<leader>b', group = '[B]reak Window' },
-        { '<leader>f', group = 'Harpoon [F]ile Management', mode = { 'n' } },
+        { '<leader>n', group = 'Harpoo[n] File Management', mode = { 'n' } },
       },
     },
   },
@@ -996,28 +996,28 @@ require('lazy').setup({
         harpoon.ui:toggle_quick_menu(harpoon:list())
       end, { desc = 'Toggle harpoon list' })
 
-      vim.keymap.set('n', '<leader>f1', function()
+      vim.keymap.set('n', '<leader>n1', function()
         harpoon:list():select(1)
       end, { desc = 'Open first file in harpoon' })
-      vim.keymap.set('n', '<leader>f2', function()
+      vim.keymap.set('n', '<leader>n2', function()
         harpoon:list():select(2)
       end, { desc = 'Open second file in harpoon' })
-      vim.keymap.set('n', '<leader>f3', function()
+      vim.keymap.set('n', '<leader>n3', function()
         harpoon:list():select(3)
       end, { desc = 'Open third file in harpoon' })
-      vim.keymap.set('n', '<leader>f4', function()
+      vim.keymap.set('n', '<leader>n4', function()
         harpoon:list():select(4)
       end, { desc = 'Open fourth file in harpoon' })
-      vim.keymap.set('n', '<leader>fa1', function()
+      vim.keymap.set('n', '<leader>na1', function()
         harpoon:list():replace_at(1)
       end, { desc = 'Replace first file in harpoon with current file' })
-      vim.keymap.set('n', '<leader>fa2', function()
+      vim.keymap.set('n', '<leader>na2', function()
         harpoon:list():replace_at(2)
       end, { desc = 'Replace second file in harpoon with current file' })
-      vim.keymap.set('n', '<leader>fa3', function()
+      vim.keymap.set('n', '<leader>na3', function()
         harpoon:list():replace_at(3)
       end, { desc = 'Replace third file in harpoon with current file' })
-      vim.keymap.set('n', '<leader>fa4', function()
+      vim.keymap.set('n', '<leader>na4', function()
         harpoon:list():replace_at(4)
       end, { desc = 'Replace fourth file in harpoon with current file' })
     end,
