@@ -884,15 +884,22 @@ require('lazy').setup({
         desc = 'Next error/warning todo comment',
       },
       {
+        '[e',
+        function()
+          require('todo-comments').jump_prev { keywords = { 'ERROR', 'WARNING' } }
+        end,
+        desc = 'Previous error/warning todo comment',
+      },
+      {
         '<leader>ct',
         '<cmd>TodoTelescope<CR>',
         desc = 'Open List of all [T]odo-related comments in Telescope',
       },
-      -- {
-      --   '<leader>cy',
-      --   '<cmd>TodoLocList<CR>',
-      --   desc = 'Open all Todo-related comments relevant to the current [L]ocation',
-      -- },
+      {
+        '<leader>cy',
+        '<cmd>TodoLocList<CR>',
+        desc = 'Open all Todo-related comments relevant to the current [L]ocation',
+      },
     },
   },
 
