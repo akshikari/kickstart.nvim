@@ -584,7 +584,6 @@ require('lazy').setup({
       local servers = {
         clangd = {}, -- C/C++ language server
         gopls = {}, -- Golang language server
-        golangci_lint_ls = {}, -- Golang language server
         pyright = {}, -- Python language server
         rust_analyzer = {}, -- Rust language server
         html = {}, -- HTML language server
