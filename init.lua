@@ -896,7 +896,7 @@ require('lazy').setup({
         desc = 'Open List of all [T]odo-related comments in Telescope',
       },
       {
-        '<leader>cy',
+        '<leader>cl',
         '<cmd>TodoLocList<CR>',
         desc = 'Open all Todo-related comments relevant to the current [L]ocation',
       },
