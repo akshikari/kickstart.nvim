@@ -589,7 +589,7 @@ require('lazy').setup({
         rust_analyzer = {}, -- Rust language server
         html = {}, -- HTML language server
         cssls = {}, -- CSS language server
-        grammarly = {}, -- Text language server
+        marksman = {},
         -- Some languages (like typescript) have entire language plugins that can be useful:
         --    https://github.com/pmizio/typescript-tools.nvim
         -- But for many setups, the LSP (`ts_ls`) will work just fine
@@ -712,7 +712,7 @@ require('lazy').setup({
         go = { 'gofmt' }, -- Go
         c = { 'clang-format' }, -- C
         cpp = { 'clang-format' }, -- C++
-        markdown = { 'prettierd', 'prettier', stop_after_first = true },
+        markdown = { 'marksman', 'prettierd', 'prettier', stop_after_first = true },
       },
     },
   },
