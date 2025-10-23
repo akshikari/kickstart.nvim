@@ -16,7 +16,7 @@ vim.g.have_nerd_font = true
 vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.opt.relativenumber = true
+vim.opt.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
@@ -99,12 +99,6 @@ vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' }
 -- vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
 -- vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
 -- vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
-
--- Keymaps for splitting the window under <leader>b
-vim.keymap.set('n', '<leader>bv', ':vsplit<CR>', { desc = 'Vertical Split' }) -- <leader>bv for vertical split
-vim.keymap.set('n', '<leader>bh', ':split<CR>', { desc = 'Horizontal Split' }) -- <leader>bh for horizontal split
-vim.keymap.set('n', '<leader>bo', '<C-w>o', { desc = 'Close other splits' }) -- <leader>bo to close other splits
-vim.keymap.set('n', '<leader>bc', '<C-w>c', { desc = 'Close current split' }) -- <leader>bc to close current split
 
 -- Keybinds to make split navigation easier.
 --  Use CTRL+<hjkl> to switch between windows
@@ -301,14 +295,13 @@ require('lazy').setup({
       -- Document existing key chains
       spec = {
         { '<leader>c', group = '[C]ode', mode = { 'n', 'x' } },
-        { '<leader>d', group = '[D]ocument' },
+        { '<leader>b', group = 'De[b]ug' },
         { '<leader>r', group = '[R]ename' },
         { '<leader>s', group = '[S]earch' },
         { '<leader>w', group = '[W]orkspace' },
         { '<leader>t', group = '[T]oggle' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
-        { '<leader>b', group = '[B]reak Window' },
-        { '<leader>n', group = 'Harpoo[n] File Management', mode = { 'n' } },
+        { '<leader>m', group = 'Harpoon File [M]anagement', mode = { 'n' } },
       },
     },
   },
@@ -517,7 +510,7 @@ require('lazy').setup({
 
           -- Fuzzy find all the symbols in your current document.
           --  Symbols are things like variables, functions, types, etc.
-          map('<leader>ds', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
+          map('<leader>cs', require('telescope.builtin').lsp_document_symbols, '[C]ode [S]ymbols')
 
           -- Fuzzy find all the symbols in your current workspace.
           --  Similar to document symbols, except searches over your entire project.
@@ -637,7 +630,7 @@ require('lazy').setup({
       local servers = {
         clangd = {}, -- C/C++ language server
         gopls = {}, -- Golang language server
-        pyright = {}, -- Python language server
+        basedpyright = {},
         rust_analyzer = {}, -- Rust language server
         html = {}, -- HTML language server
         cssls = {}, -- CSS language server
@@ -645,7 +638,7 @@ require('lazy').setup({
         -- Some languages (like typescript) have entire language plugins that can be useful:
         --    https://github.com/pmizio/typescript-tools.nvim
         -- But for many setups, the LSP (`ts_ls`) will work just fine
-        ts_ls = {}, -- TypeScript language server
+        ts_ls = {},
         lua_ls = { -- Lua language server
           -- cmd = {...},
           -- filetypes = { ...},
@@ -678,26 +671,25 @@ require('lazy').setup({
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Lua formatter
-        'black', -- Python formatter
-        'autopep8', -- Less strict Python formatter
-        'yapf', -- Trying all the Python formatters at this point god damn
-        'docformatter', -- Python docstrings formatter
-        'isort', -- Python import list formatter
         'clang-format', -- C/C++ Formatter
         'prettier', -- TypeScript, JavaScript, Markdown, HTML, CSS Formatter
         'prettierd', -- More performant formatter
+        'eslint_d', -- JavaScript/TypeScript daemon linter
         'markdownlint', -- Markdown linter
         'golangci-lint', -- Golang linter
         'hadolint', -- Dockerfile linter
         'jsonlint', -- JSON linter
-        'eslint', -- JavaScript linter
-        'flake8', -- Python linter
         'yamllint', -- YAML linter
         'tflint', -- Terraform linter
         'vale', -- Text linter
         'sqlfluff', -- SQL linter
         'htmlhint', -- HTML linter
         'stylelint', -- CSS linter
+        'delve', -- Go DAP
+        'debugpy', -- Python DAP
+        'codelldb', -- C/C++ DAP
+        'js-debug-adapter', -- JavaScript/TypeScript DAP
+        'black', -- Python formatter
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -752,20 +744,15 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
-        python = {
-          'isort',
-          'black',
-          'autopep8',
-          'yapf',
-          'docformatter --in-place',
-          stop_after_first = false,
-        },
+        python = { 'ruff_fix', 'ruff_format' },
         html = { 'prettierd', 'prettier', stop_after_first = true },
         css = { 'prettierd', 'prettier', stop_after_first = true },
         rust = {},
         -- You can use 'stop_after_first' to run the first available formatter from the list
         javascript = { 'prettierd', 'prettier', stop_after_first = true },
         typescript = { 'prettierd', 'prettier', stop_after_first = true }, -- TypeScript
+        javascriptreact = { 'prettierd', 'prettier', stop_after_first = true },
+        typescriptreact = { 'prettierd', 'prettier', stop_after_first = true },
         go = { 'gofmt' }, -- Go
         c = { 'clang-format' }, -- C
         cpp = { 'clang-format' }, -- C++
@@ -794,12 +781,12 @@ require('lazy').setup({
           -- `friendly-snippets` contains a variety of premade snippets.
           --    See the README about individual language/framework/plugin snippets:
           --    https://github.com/rafamadriz/friendly-snippets
-          -- {
-          --   'rafamadriz/friendly-snippets',
-          --   config = function()
-          --     require('luasnip.loaders.from_vscode').lazy_load()
-          --   end,
-          -- },
+          {
+            'rafamadriz/friendly-snippets',
+            config = function()
+              require('luasnip.loaders.from_vscode').lazy_load()
+            end,
+          },
         },
       },
       'saadparwaiz1/cmp_luasnip',
@@ -891,27 +878,37 @@ require('lazy').setup({
       }
     end,
   },
-
-  { -- You can easily change to a different colorscheme.
-    -- Change the name of the colorscheme plugin below, and then
-    -- change the command in the config to whatever the name of that colorscheme is.
-    --
-    -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'folke/tokyonight.nvim',
-    priority = 1000, -- Make sure to load this before all the other start plugins.
+  {
+    'catppuccin/nvim',
+    name = 'catppuccin',
+    priority = 1000,
     opts = {
-      style = 'night',
+      flavor = 'frappe',
     },
-    init = function()
-      -- Load the colorscheme here.
-      -- Like many other themes, this one has different styles, and you could load
-      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
-
-      -- You can configure highlights by doing something like:
-      -- vim.cmd.hi 'Comment gui=none'
+    config = function()
+      vim.cmd.colorscheme 'catppuccin-frappe'
     end,
   },
+  -- { -- You can easily change to a different colorscheme.
+  --   -- Change the name of the colorscheme plugin below, and then
+  --   -- change the command in the config to whatever the name of that colorscheme is.
+  --   --
+  --   -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
+  --   'folke/tokyonight.nvim',
+  --   priority = 1000, -- Make sure to load this before all the other start plugins.
+  --   opts = {
+  --     style = 'night',
+  --   },
+  --   init = function()
+  --     -- Load the colorscheme here.
+  --     -- Like many other themes, this one has different styles, and you could load
+  --     -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
+  --     vim.cmd.colorscheme 'tokyonight-night'
+  --
+  --     -- You can configure highlights by doing something like:
+  --     -- vim.cmd.hi 'Comment gui=none'
+  --   end,
+  -- },
 
   -- Highlight todo, notes, etc in comments
   {
@@ -1002,6 +999,7 @@ require('lazy').setup({
   },
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
+    dependencies = { 'OXY2DEV/markview.nvim' },
     build = ':TSUpdate',
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
@@ -1058,46 +1056,17 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>a', function()
         harpoon:list():add()
       end, { desc = '[A]dd file to harpoon pick list' })
-      vim.keymap.set('n', '<C-m>', function()
-        harpoon.ui:toggle_quick_menu(harpoon:list())
-      end, { desc = 'Toggle harpoon list' })
 
-      vim.keymap.set('n', '<leader>m1', function()
-        harpoon:list():select(1)
-      end, { desc = 'Open first file in harpoon' })
-      vim.keymap.set('n', '<leader>m2', function()
-        harpoon:list():select(2)
-      end, { desc = 'Open second file in harpoon' })
-      vim.keymap.set('n', '<leader>m3', function()
-        harpoon:list():select(3)
-      end, { desc = 'Open third file in harpoon' })
-      vim.keymap.set('n', '<leader>m4', function()
-        harpoon:list():select(4)
-      end, { desc = 'Open fourth file in harpoon' })
-      vim.keymap.set('n', '<leader>m5', function()
-        harpoon:list():select(5)
-      end, { desc = 'Open fifth file in harpoon' })
-      vim.keymap.set('n', '<leader>m6', function()
-        harpoon:list():select(6)
-      end, { desc = 'Open sixth file in harpoon' })
-      vim.keymap.set('n', '<leader>ma1', function()
-        harpoon:list():replace_at(1)
-      end, { desc = 'Replace first file in harpoon with current file' })
-      vim.keymap.set('n', '<leader>ma2', function()
-        harpoon:list():replace_at(2)
-      end, { desc = 'Replace second file in harpoon with current file' })
-      vim.keymap.set('n', '<leader>ma3', function()
-        harpoon:list():replace_at(3)
-      end, { desc = 'Replace third file in harpoon with current file' })
-      vim.keymap.set('n', '<leader>ma4', function()
-        harpoon:list():replace_at(4)
-      end, { desc = 'Replace fourth file in harpoon with current file' })
-      vim.keymap.set('n', '<leader>ma5', function()
-        harpoon:list():replace_at(5)
-      end, { desc = 'Replace fifth file in harpoon with current file' })
-      vim.keymap.set('n', '<leader>ma6', function()
-        harpoon:list():replace_at(6)
-      end, { desc = 'Replace sixth file in harpoon with current file' })
+      for i = 1, 9 do
+        vim.keymap.set('n', '<leader>' .. i, function()
+          harpoon:list():select(i)
+        end, { desc = 'Switch to harpoon file ' .. i })
+      end
+      for i = 1, 9 do
+        vim.keymap.set('n', '<leader>m' .. i, function()
+          harpoon:list():replace_at(i)
+        end, { desc = 'Replace harpoon file ' .. i })
+      end
     end,
   },
   {
@@ -1133,6 +1102,82 @@ require('lazy').setup({
     keys = {
       { '<leader>lg', '<cmd>LazyGit<cr>', desc = 'Open up [L]azy[G]it' },
     },
+  },
+  {
+    'jake-stewart/multicursor.nvim',
+    branch = '1.0',
+    config = function()
+      local mc = require 'multicursor-nvim'
+      mc.setup()
+
+      local set = vim.keymap.set
+
+      -- Add or skip cursor above/below the main cursor.
+      set({ 'n', 'x' }, '<up>', function()
+        mc.lineAddCursor(-1)
+      end)
+      set({ 'n', 'x' }, '<down>', function()
+        mc.lineAddCursor(1)
+      end)
+      set({ 'n', 'x' }, '<leader><up>', function()
+        mc.lineSkipCursor(-1)
+      end)
+      set({ 'n', 'x' }, '<leader><down>', function()
+        mc.lineSkipCursor(1)
+      end)
+
+      -- Add or skip adding a new cursor by matching word/selection
+      set({ 'n', 'x' }, '<leader>n', function()
+        mc.matchAddCursor(1)
+      end)
+      set({ 'n', 'x' }, '<leader>s', function()
+        mc.matchSkipCursor(1)
+      end)
+      set({ 'n', 'x' }, '<leader>N', function()
+        mc.matchAddCursor(-1)
+      end)
+      set({ 'n', 'x' }, '<leader>S', function()
+        mc.matchSkipCursor(-1)
+      end)
+
+      -- Add and remove cursors with control + left click.
+      set('n', '<c-leftmouse>', mc.handleMouse)
+      set('n', '<c-leftdrag>', mc.handleMouseDrag)
+      set('n', '<c-leftrelease>', mc.handleMouseRelease)
+
+      -- Disable and enable cursors.
+      set({ 'n', 'x' }, '<c-q>', mc.toggleCursor)
+
+      -- Mappings defined in a keymap layer only apply when there are
+      -- multiple cursors. This lets you have overlapping mappings.
+      mc.addKeymapLayer(function(layerSet)
+        -- Select a different cursor as the main one.
+        layerSet({ 'n', 'x' }, '<left>', mc.prevCursor)
+        layerSet({ 'n', 'x' }, '<right>', mc.nextCursor)
+
+        -- Delete the main cursor.
+        layerSet({ 'n', 'x' }, '<leader>x', mc.deleteCursor)
+
+        -- Enable and clear cursors using escape.
+        layerSet('n', '<esc>', function()
+          if not mc.cursorsEnabled() then
+            mc.enableCursors()
+          else
+            mc.clearCursors()
+          end
+        end)
+      end)
+
+      -- Customize how cursors look.
+      local hl = vim.api.nvim_set_hl
+      hl(0, 'MultiCursorCursor', { reverse = true })
+      hl(0, 'MultiCursorVisual', { link = 'Visual' })
+      hl(0, 'MultiCursorSign', { link = 'SignColumn' })
+      hl(0, 'MultiCursorMatchPreview', { link = 'Search' })
+      hl(0, 'MultiCursorDisabledCursor', { reverse = true })
+      hl(0, 'MultiCursorDisabledVisual', { link = 'Visual' })
+      hl(0, 'MultiCursorDisabledSign', { link = 'SignColumn' })
+    end,
   },
   -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
