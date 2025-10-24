@@ -674,6 +674,7 @@ require('lazy').setup({
         'clang-format', -- C/C++ Formatter
         'prettier', -- TypeScript, JavaScript, Markdown, HTML, CSS Formatter
         'prettierd', -- More performant formatter
+        'black', -- Python formatter
         'eslint_d', -- JavaScript/TypeScript daemon linter
         'markdownlint', -- Markdown linter
         'golangci-lint', -- Golang linter
@@ -689,7 +690,6 @@ require('lazy').setup({
         'debugpy', -- Python DAP
         'codelldb', -- C/C++ DAP
         'js-debug-adapter', -- JavaScript/TypeScript DAP
-        'black', -- Python formatter
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
