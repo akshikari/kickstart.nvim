@@ -9,6 +9,7 @@
 return {
   -- NOTE: Yes, you can install new plugins here!
   'mfussenegger/nvim-dap',
+  event = 'VeryLazy',
   -- NOTE: And you can specify dependencies as well
   dependencies = {
     -- Creates a beautiful debugger UI
@@ -24,13 +25,13 @@ return {
     -- Add your own debuggers here
     'leoluz/nvim-dap-go', -- Go
     'mfussenegger/nvim-dap-python', -- Python
-    {
-      'mxsdev/nvim-dap-vscode-js', -- JavaScript, TypeScript
-      dependencies = {
-        'microsoft/vscode-js-debug', -- Required debugger
-        build = 'npm ci --legacy-peer-deps && npm run compile',
-      },
-    },
+    -- {
+    --   'mxsdev/nvim-dap-vscode-js', -- JavaScript, TypeScript
+    --   dependencies = {
+    --     'microsoft/vscode-js-debug', -- Required debugger
+    --     build = 'npm ci --legacy-peer-deps && npm run compile',
+    --   },
+    -- },
     'puremourning/vimspector', -- C/C++
 
     -- Virtual text for debugger
@@ -212,31 +213,93 @@ return {
     require('dap-python').setup '~/.local/share/nvim/mason/packages/debugpy/venv/bin/python'
 
     -- Javascript/TypeScript configuration
-    require('dap-vscode-js').setup {
-      -- node_path = "node", -- Path of node executable. Defaults to $NODE_PATH, and then "node"
-      debugger_path = vim.fn.stdpath 'data' .. '/mason/packages/js-debug-adapter',
-      adapters = { 'pwa-node', 'pwa-chrome', 'pwa-msedge', 'node-terminal' },
-    }
+    for _, adapterType in ipairs { 'node', 'chrome', 'msedge' } do
+      local pwaType = 'pwa-' .. adapterType
 
-    for _, language in ipairs { 'typescript', 'javascript' } do
-      dap.configurations[language] = {
-        {
-          type = 'pwa-node',
-          request = 'launch',
-          name = 'Launch file',
-          program = '${file}',
-          cwd = '${workspaceFolder}',
-          runtimeExecutable = 'node',
-          console = 'integratedTerminal',
-        },
-        {
-          type = 'pwa-node',
-          request = 'attach',
-          name = 'Attach',
-          processId = require('dap.utils').pick_process,
-          cwd = '${workspaceFolder}',
-        },
-      }
+      if not dap.adapters[pwaType] then
+        dap.adapters[pwaType] = {
+          type = 'server',
+          host = 'localhost',
+          port = '${port}',
+          executable = {
+            command = 'js-debug-adapter',
+            args = { '${port}' },
+          },
+        }
+      end
+
+      -- Define adapters without the "pwa-" prefix for VSCode compatibility
+      if not dap.adapters[adapterType] then
+        dap.adapters[adapterType] = function(cb, config)
+          local nativeAdapter = dap.adapters[pwaType]
+
+          config.type = pwaType
+
+          if type(nativeAdapter) == 'function' then
+            nativeAdapter(cb, config)
+          else
+            cb(nativeAdapter)
+          end
+        end
+      end
+    end
+
+    local js_filetypes = { 'typescript', 'javascript', 'typescriptreact', 'javascriptreact' }
+
+    local vscode = require 'dap.ext.vscode'
+    vscode.type_to_filetypes['node'] = js_filetypes
+    vscode.type_to_filetypes['pwa-node'] = js_filetypes
+
+    for _, language in ipairs(js_filetypes) do
+      if not dap.configurations[language] then
+        local runtimeExecutable = nil
+        if language:find 'typescript' then
+          runtimeExecutable = vim.fn.executable 'tsx' == 1 and 'tsx' or 'ts-node'
+        end
+        dap.configurations[language] = {
+          {
+            type = 'pwa-node',
+            request = 'launch',
+            name = 'Launch file',
+            program = '${file}',
+            cwd = '${workspaceFolder}',
+            sourceMaps = true,
+            runtimeExecutable = runtimeExecutable,
+            skipFiles = {
+              '<node_internals>/**',
+              'node_modules/**',
+            },
+            resolveSourceMapLocations = {
+              '${workspaceFolder}/**',
+              '!**/node_modules/**',
+            },
+          },
+          {
+            type = 'pwa-node',
+            request = 'attach',
+            name = 'Attach',
+            processId = require('dap.utils').pick_process,
+            cwd = '${workspaceFolder}',
+            sourceMaps = true,
+            runtimeExecutable = runtimeExecutable,
+            skipFiles = {
+              '<node_internals>/**',
+              'node_modules/**',
+            },
+            resolveSourceMapLocations = {
+              '${workspaceFolder}/**',
+              '!**/node_modules/**',
+            },
+          },
+          {
+            type = 'pwa-chrome',
+            request = 'launch',
+            name = 'Start Chrome Vite',
+            url = 'http://localhost:5173',
+            webRoot = '${workspaceFolder}',
+          },
+        }
+      end
     end
 
     -- C/C++ configuration
