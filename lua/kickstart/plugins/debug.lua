@@ -25,13 +25,13 @@ return {
     -- Add your own debuggers here
     'leoluz/nvim-dap-go', -- Go
     'mfussenegger/nvim-dap-python', -- Python
-    -- {
-    --   'mxsdev/nvim-dap-vscode-js', -- JavaScript, TypeScript
-    --   dependencies = {
-    --     'microsoft/vscode-js-debug', -- Required debugger
-    --     build = 'npm ci --legacy-peer-deps && npm run compile',
-    --   },
-    -- },
+    {
+      'mxsdev/nvim-dap-vscode-js', -- JavaScript, TypeScript
+      dependencies = {
+        'microsoft/vscode-js-debug', -- Required debugger
+        build = 'npm ci --legacy-peer-deps && npm run compile',
+      },
+    },
     'puremourning/vimspector', -- C/C++
 
     -- Virtual text for debugger
@@ -212,7 +212,58 @@ return {
     -- Python configuration
     require('dap-python').setup '~/.local/share/nvim/mason/packages/debugpy/venv/bin/python'
 
+    -- Python debug configurations
+    dap.configurations.python = {
+      {
+        type = 'python',
+        request = 'attach',
+        name = 'Attach to FastAPI (Docker)',
+        connect = {
+          host = 'localhost',
+          port = 5678,
+        },
+        pathMappings = {
+          {
+            localRoot = vim.fn.getcwd(),
+            remoteRoot = '/app',
+          },
+        },
+        justMyCode = false,
+      },
+      {
+        type = 'python',
+        request = 'launch',
+        name = 'Launch FastAPI Local',
+        program = '${file}',
+        console = 'integratedTerminal',
+        justMyCode = false,
+        cwd = '${workspaceFolder}',
+      },
+      {
+        type = 'python',
+        request = 'launch',
+        name = 'Launch with Arguments',
+        program = '${file}',
+        args = function()
+          local args_string = vim.fn.input('Arguments: ')
+          return vim.split(args_string, ' ')
+        end,
+        console = 'integratedTerminal',
+        justMyCode = false,
+        cwd = '${workspaceFolder}',
+      },
+    }
+
     -- Javascript/TypeScript configuration
+    require('dap-vscode-js').setup {
+      -- node_path = "node", -- Path of node executable. Defaults to $NODE_PATH, and then "node"
+      debugger_path = vim.fn.stdpath 'data' .. '/lazy/vscode-js-debug', -- Path to vscode-js-debug installation.
+      -- debugger_cmd = { "extension" }, -- Command to use to launch the debug server. Takes precedence over `node_path` and `debugger_path`.
+      adapters = { 'chrome', 'pwa-node', 'pwa-chrome', 'pwa-msedge', 'node-terminal', 'pwa-extensionHost', 'node', 'chrome' }, -- which adapters to register in nvim-dap
+      -- log_file_path = "(stdpath cache)/dap_vscode_js.log" -- Path for file logging
+      -- log_file_level = false -- Logging level for output to file. Set to false to disable file logging.
+      -- log_console_level = vim.log.levels.ERROR -- Logging level for output to console. Set to false to disable console output.
+    }
     for _, adapterType in ipairs { 'node', 'chrome', 'msedge' } do
       local pwaType = 'pwa-' .. adapterType
 
@@ -296,6 +347,7 @@ return {
             request = 'launch',
             name = 'Start Chrome Vite',
             url = 'http://localhost:5173',
+            port = '${port}',
             webRoot = '${workspaceFolder}',
           },
         }

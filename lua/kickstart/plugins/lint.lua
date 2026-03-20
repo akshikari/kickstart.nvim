@@ -9,9 +9,9 @@ return {
         markdown = { 'markdownlint' }, -- Markdown linter
         dockerfile = { 'hadolint' }, -- Dockerfile linter
         json = { 'jsonlint' }, -- JSON linter
-        javascript = { 'eslint' }, -- JavaScript linter
-        typescript = { 'eslint' }, -- TypeScript linter
-        python = { 'flake8' }, -- Python linter
+        javascript = { 'eslint_d' }, -- JavaScript linter
+        typescript = { 'eslint_d' }, -- TypeScript linter
+        python = {}, -- Python linter
         rust = { 'cargo' }, -- Rust linter (via cargo check)
         cpp = { 'clangtidy' }, -- C++ linter
         c = { 'clangtidy' }, -- C linter

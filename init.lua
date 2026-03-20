@@ -316,7 +316,7 @@ require('lazy').setup({
   { -- Fuzzy Finder (files, lsp, etc)
     'nvim-telescope/telescope.nvim',
     event = 'VimEnter',
-    branch = '0.1.x',
+    branch = 'master',
     dependencies = {
       'nvim-lua/plenary.nvim',
       { -- If encountering errors, see telescope-fzf-native README for installation instructions
@@ -630,7 +630,6 @@ require('lazy').setup({
       local servers = {
         clangd = {}, -- C/C++ language server
         gopls = {}, -- Golang language server
-        basedpyright = {},
         rust_analyzer = {}, -- Rust language server
         html = {}, -- HTML language server
         cssls = {}, -- CSS language server
@@ -675,7 +674,9 @@ require('lazy').setup({
         'prettier', -- TypeScript, JavaScript, Markdown, HTML, CSS Formatter
         'prettierd', -- More performant formatter
         'black', -- Python formatter
+        'mypy', -- Python linter
         'eslint_d', -- JavaScript/TypeScript daemon linter
+        'eslint', -- JS/TS linter
         'markdownlint', -- Markdown linter
         'golangci-lint', -- Golang linter
         'hadolint', -- Dockerfile linter
@@ -738,7 +739,7 @@ require('lazy').setup({
           lsp_format_opt = 'fallback'
         end
         return {
-          timeout_ms = 500,
+          timeout_ms = 3000,
           lsp_format = lsp_format_opt,
         }
       end,
