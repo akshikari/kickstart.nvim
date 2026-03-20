@@ -28,12 +28,12 @@ return {
     {
       'mxsdev/nvim-dap-vscode-js', -- JavaScript, TypeScript
       dependencies = {
-        'microsoft/vscode-js-debug', -- Required debugger
-        build = 'npm ci --legacy-peer-deps && npm run compile',
+        {
+          'microsoft/vscode-js-debug', -- Required debugger
+          build = 'npm ci --legacy-peer-deps && npm run compile',
+        },
       },
     },
-    'puremourning/vimspector', -- C/C++
-
     -- Virtual text for debugger
     'theHamsta/nvim-dap-virtual-text',
   },

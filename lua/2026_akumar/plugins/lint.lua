@@ -11,13 +11,12 @@ return {
         json = { 'jsonlint' }, -- JSON linter
         javascript = { 'eslint_d' }, -- JavaScript linter
         typescript = { 'eslint_d' }, -- TypeScript linter
-        python = {}, -- Python linter
+        python = { 'mypy' }, -- Python type checker
         rust = { 'cargo' }, -- Rust linter (via cargo check)
         cpp = { 'clangtidy' }, -- C++ linter
         c = { 'clangtidy' }, -- C linter
         yaml = { 'yamllint' }, -- YAML linter
         terraform = { 'tflint' }, -- Terraform linter
-        text = { 'vale' }, -- Text linter
         sql = { 'sqlfluff' }, -- SQL linter
         go = { 'golangcilint' }, -- Golang linter
         html = { 'htmlhint' }, -- HTML linter
